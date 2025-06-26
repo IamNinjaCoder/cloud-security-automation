@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Security Automation Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-shield-alt"></i> Cloud Security Automation</h1>
+                <div class="header-actions">
+                    <button id="testConnectionBtn" class="btn btn-secondary">
+                        <i class="fas fa-plug"></i> Test AWS Connection
+                    </button>
+                    <button id="startScanBtn" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Start Security Scan
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Summary -->
+            <section class="dashboard-summary">
+                <div class="summary-cards">
+                    <div class="card">
+                        <div class="card-icon critical">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 id="totalFindings">-</h3>
+                            <p>Total Findings</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon info">
+                            <i class="fas fa-server"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 id="totalResources">-</h3>
+                            <p>AWS Resources</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon success">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 id="securityScore">-</h3>
+                            <p>Security Score</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon warning">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 id="lastScan">-</h3>
+                            <p>Last Scan</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Navigation Tabs -->
+            <nav class="tab-navigation">
+                <button class="tab-btn active" data-tab="findings">
+                    <i class="fas fa-bug"></i> Security Findings
+                </button>
+                <button class="tab-btn" data-tab="resources">
+                    <i class="fas fa-cubes"></i> AWS Resources
+                </button>
+                <button class="tab-btn" data-tab="compliance">
+                    <i class="fas fa-clipboard-check"></i> Compliance
+                </button>
+                <button class="tab-btn" data-tab="scans">
+                    <i class="fas fa-history"></i> Scan History
+                </button>
+            </nav>
+
+            <!-- Tab Content -->
+            <div class="tab-content">
+                <!-- Security Findings Tab -->
+                <div id="findings" class="tab-pane active">
+                    <div class="section-header">
+                        <h2>Security Findings</h2>
+                        <div class="filters">
+                            <select id="severityFilter">
+                                <option value="">All Severities</option>
+                                <option value="critical">Critical</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                            <select id="typeFilter">
+                                <option value="">All Types</option>
+                                <option value="vulnerability">Vulnerability</option>
+                                <option value="misconfiguration">Misconfiguration</option>
+                                <option value="compliance">Compliance</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="findings-container">
+                        <div id="findingsTable" class="table-container">
+                            <div class="loading">Loading findings...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AWS Resources Tab -->
+                <div id="resources" class="tab-pane">
+                    <div class="section-header">
+                        <h2>AWS Resources</h2>
+                        <div class="filters">
+                            <select id="resourceTypeFilter">
+                                <option value="">All Resource Types</option>
+                                <option value="EC2_Instance">EC2 Instances</option>
+                                <option value="S3_Bucket">S3 Buckets</option>
+                                <option value="EC2_SecurityGroup">Security Groups</option>
+                                <option value="RDS_Instance">RDS Instances</option>
+                            </select>
+                            <select id="regionFilter">
+                                <option value="">All Regions</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="resources-container">
+                        <div id="resourcesTable" class="table-container">
+                            <div class="loading">Loading resources...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Compliance Tab -->
+                <div id="compliance" class="tab-pane">
+                    <div class="section-header">
+                        <h2>Compliance Status</h2>
+                    </div>
+                    <div class="compliance-container">
+                        <div class="compliance-card">
+                            <h3><i class="fas fa-shield-alt"></i> CIS AWS Foundations Benchmark</h3>
+                            <div id="cisCompliance" class="compliance-content">
+                                <div class="loading">Loading compliance data...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scan History Tab -->
+                <div id="scans" class="tab-pane">
+                    <div class="section-header">
+                        <h2>Scan History</h2>
+                    </div>
+                    <div class="scans-container">
+                        <div id="scansTable" class="table-container">
+                            <div class="loading">Loading scan history...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Finding Details -->
+    <div id="findingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Finding Details</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Finding details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button id="resolveFindingBtn" class="btn btn-success">Resolve</button>
+                <button id="suppressFindingBtn" class="btn btn-warning">Suppress</button>
+                <button class="btn btn-secondary modal-close">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notifications" class="notifications"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+

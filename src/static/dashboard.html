@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Security Automation - Advanced Dashboard</title>
+    <link rel="stylesheet" href="enhanced-styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <i class="fas fa-shield-alt"></i>
+                    <h1>Cloud Security Automation</h1>
+                </div>
+                <div class="header-controls">
+                    <div class="time-range-selector">
+                        <select id="timeRange">
+                            <option value="7">Last 7 days</option>
+                            <option value="30" selected>Last 30 days</option>
+                            <option value="90">Last 90 days</option>
+                        </select>
+                    </div>
+                    <button class="refresh-btn" onclick="refreshDashboard()">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                    <div class="last-updated">
+                        Last updated: <span id="lastUpdated">--</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="dashboard-nav">
+            <div class="nav-tabs">
+                <button class="nav-tab active" data-tab="overview">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Overview
+                </button>
+                <button class="nav-tab" data-tab="findings">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Security Findings
+                </button>
+                <button class="nav-tab" data-tab="compliance">
+                    <i class="fas fa-check-circle"></i>
+                    Compliance
+                </button>
+                <button class="nav-tab" data-tab="threats">
+                    <i class="fas fa-bug"></i>
+                    Threat Intelligence
+                </button>
+                <button class="nav-tab" data-tab="resources">
+                    <i class="fas fa-server"></i>
+                    Resource Inventory
+                </button>
+                <button class="nav-tab" data-tab="analytics">
+                    <i class="fas fa-chart-line"></i>
+                    Analytics
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Overview Tab -->
+            <div class="tab-content active" id="overview">
+                <!-- Key Metrics -->
+                <section class="metrics-section">
+                    <div class="metrics-grid">
+                        <div class="metric-card security-score">
+                            <div class="metric-header">
+                                <h3>Security Score</h3>
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="metric-value">
+                                <span id="securityScore">--</span>
+                                <span class="metric-unit">/100</span>
+                            </div>
+                            <div class="metric-trend">
+                                <span id="securityScoreTrend">--</span>
+                            </div>
+                        </div>
+
+                        <div class="metric-card total-findings">
+                            <div class="metric-header">
+                                <h3>Total Findings</h3>
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="metric-value">
+                                <span id="totalFindings">--</span>
+                            </div>
+                            <div class="metric-breakdown">
+                                <span class="critical" id="criticalFindings">0</span>
+                                <span class="high" id="highFindings">0</span>
+                                <span class="medium" id="mediumFindings">0</span>
+                                <span class="low" id="lowFindings">0</span>
+                            </div>
+                        </div>
+
+                        <div class="metric-card active-resources">
+                            <div class="metric-header">
+                                <h3>Resources Monitored</h3>
+                                <i class="fas fa-server"></i>
+                            </div>
+                            <div class="metric-value">
+                                <span id="totalResources">--</span>
+                            </div>
+                            <div class="metric-trend">
+                                <span id="resourcesTrend">--</span>
+                            </div>
+                        </div>
+
+                        <div class="metric-card compliance-rate">
+                            <div class="metric-header">
+                                <h3>Compliance Rate</h3>
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="metric-value">
+                                <span id="complianceRate">--</span>
+                                <span class="metric-unit">%</span>
+                            </div>
+                            <div class="metric-trend">
+                                <span id="complianceTrend">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Charts Section -->
+                <section class="charts-section">
+                    <div class="charts-grid">
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h3>Security Findings Trend</h3>
+                                <div class="chart-controls">
+                                    <button class="chart-control active" data-period="7d">7D</button>
+                                    <button class="chart-control" data-period="30d">30D</button>
+                                    <button class="chart-control" data-period="90d">90D</button>
+                                </div>
+                            </div>
+                            <canvas id="findingsTrendChart"></canvas>
+                        </div>
+
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h3>Severity Distribution</h3>
+                            </div>
+                            <canvas id="severityChart"></canvas>
+                        </div>
+
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h3>Regional Distribution</h3>
+                            </div>
+                            <canvas id="regionalChart"></canvas>
+                        </div>
+
+                        <div class="chart-container">
+                            <div class="chart-header">
+                                <h3>Risk Trend</h3>
+                            </div>
+                            <canvas id="riskTrendChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Recent Activities -->
+                <section class="activities-section">
+                    <div class="section-header">
+                        <h3>Recent Security Activities</h3>
+                        <button class="view-all-btn">View All</button>
+                    </div>
+                    <div class="activities-list" id="recentActivities">
+                        <!-- Activities will be populated by JavaScript -->
+                    </div>
+                </section>
+            </div>
+
+            <!-- Security Findings Tab -->
+            <div class="tab-content" id="findings">
+                <div class="findings-header">
+                    <h2>Security Findings</h2>
+                    <div class="findings-controls">
+                        <div class="filter-group">
+                            <select id="severityFilter">
+                                <option value="">All Severities</option>
+                                <option value="critical">Critical</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                            <select id="statusFilter">
+                                <option value="">All Statuses</option>
+                                <option value="active">Active</option>
+                                <option value="resolved">Resolved</option>
+                                <option value="suppressed">Suppressed</option>
+                            </select>
+                            <input type="text" id="searchFilter" placeholder="Search findings...">
+                        </div>
+                        <button class="scan-btn" onclick="startScan()">
+                            <i class="fas fa-search"></i>
+                            Start Scan
+                        </button>
+                    </div>
+                </div>
+
+                <div class="findings-stats">
+                    <div class="stat-card">
+                        <span class="stat-label">Critical</span>
+                        <span class="stat-value critical" id="criticalCount">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">High</span>
+                        <span class="stat-value high" id="highCount">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Medium</span>
+                        <span class="stat-value medium" id="mediumCount">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Low</span>
+                        <span class="stat-value low" id="lowCount">0</span>
+                    </div>
+                </div>
+
+                <div class="findings-table-container">
+                    <table class="findings-table">
+                        <thead>
+                            <tr>
+                                <th>Severity</th>
+                                <th>Title</th>
+                                <th>Resource</th>
+                                <th>Region</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="findingsTableBody">
+                            <!-- Findings will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination" id="findingsPagination">
+                    <!-- Pagination will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Compliance Tab -->
+            <div class="tab-content" id="compliance">
+                <div class="compliance-header">
+                    <h2>Compliance Dashboard</h2>
+                    <div class="compliance-controls">
+                        <select id="frameworkFilter">
+                            <option value="all">All Frameworks</option>
+                            <option value="cis">CIS AWS Foundations</option>
+                            <option value="soc2">SOC 2</option>
+                            <option value="hipaa">HIPAA</option>
+                            <option value="gdpr">GDPR</option>
+                            <option value="nist">NIST</option>
+                        </select>
+                        <button class="compliance-scan-btn" onclick="runComplianceScan()">
+                            <i class="fas fa-clipboard-check"></i>
+                            Run Compliance Scan
+                        </button>
+                    </div>
+                </div>
+
+                <div class="compliance-overview">
+                    <div class="compliance-score-card">
+                        <div class="score-circle">
+                            <canvas id="complianceScoreChart"></canvas>
+                            <div class="score-text">
+                                <span id="overallComplianceScore">--</span>%
+                            </div>
+                        </div>
+                        <div class="score-details">
+                            <h3>Overall Compliance Score</h3>
+                            <div class="score-breakdown">
+                                <div class="score-item">
+                                    <span class="score-label">Passed:</span>
+                                    <span class="score-value" id="passedChecks">--</span>
+                                </div>
+                                <div class="score-item">
+                                    <span class="score-label">Failed:</span>
+                                    <span class="score-value" id="failedChecks">--</span>
+                                </div>
+                                <div class="score-item">
+                                    <span class="score-label">Warnings:</span>
+                                    <span class="score-value" id="warningChecks">--</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="frameworks-grid" id="frameworksGrid">
+                        <!-- Framework cards will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="compliance-violations">
+                    <h3>Top Compliance Violations</h3>
+                    <div class="violations-list" id="violationsList">
+                        <!-- Violations will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="remediation-priorities">
+                    <h3>Remediation Priorities</h3>
+                    <div class="priorities-list" id="prioritiesList">
+                        <!-- Priorities will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Threat Intelligence Tab -->
+            <div class="tab-content" id="threats">
+                <div class="threats-header">
+                    <h2>Threat Intelligence</h2>
+                    <div class="threats-controls">
+                        <select id="threatTimeRange">
+                            <option value="1">Last 24 hours</option>
+                            <option value="7" selected>Last 7 days</option>
+                            <option value="30">Last 30 days</option>
+                        </select>
+                        <button class="threat-scan-btn" onclick="analyzeThreatIntelligence()">
+                            <i class="fas fa-search"></i>
+                            Analyze Threats
+                        </button>
+                    </div>
+                </div>
+
+                <div class="threat-summary">
+                    <div class="threat-metrics">
+                        <div class="threat-metric">
+                            <div class="metric-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="metric-info">
+                                <span class="metric-value" id="totalThreats">--</span>
+                                <span class="metric-label">Total Threats</span>
+                            </div>
+                        </div>
+                        <div class="threat-metric">
+                            <div class="metric-icon">
+                                <i class="fas fa-fire"></i>
+                            </div>
+                            <div class="metric-info">
+                                <span class="metric-value" id="highSeverityThreats">--</span>
+                                <span class="metric-label">High Severity</span>
+                            </div>
+                        </div>
+                        <div class="threat-metric">
+                            <div class="metric-icon">
+                                <i class="fas fa-eye"></i>
+                            </div>
+                            <div class="metric-info">
+                                <span class="metric-value" id="activeInvestigations">--</span>
+                                <span class="metric-label">Active Investigations</span>
+                            </div>
+                        </div>
+                        <div class="threat-metric">
+                            <div class="metric-icon">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="metric-info">
+                                <span class="metric-value" id="resolvedThreats">--</span>
+                                <span class="metric-label">Resolved</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="threat-analysis">
+                    <div class="threat-charts">
+                        <div class="chart-container">
+                            <h3>Threat Categories</h3>
+                            <canvas id="threatCategoriesChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <h3>Geographic Distribution</h3>
+                            <canvas id="geographicChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <h3>Attack Vectors</h3>
+                            <canvas id="attackVectorsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recent-threats">
+                    <h3>Recent Threat Activities</h3>
+                    <div class="threats-timeline" id="threatsTimeline">
+                        <!-- Timeline will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="threat-recommendations">
+                    <h3>Security Recommendations</h3>
+                    <div class="recommendations-list" id="threatRecommendations">
+                        <!-- Recommendations will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resource Inventory Tab -->
+            <div class="tab-content" id="resources">
+                <div class="resources-header">
+                    <h2>Resource Inventory</h2>
+                    <div class="resources-controls">
+                        <select id="resourceTypeFilter">
+                            <option value="">All Resource Types</option>
+                            <option value="EC2_Instance">EC2 Instances</option>
+                            <option value="S3_Bucket">S3 Buckets</option>
+                            <option value="RDS_Instance">RDS Instances</option>
+                            <option value="EC2_SecurityGroup">Security Groups</option>
+                            <option value="IAM_User">IAM Users</option>
+                            <option value="IAM_Role">IAM Roles</option>
+                        </select>
+                        <select id="resourceRegionFilter">
+                            <option value="">All Regions</option>
+                        </select>
+                        <button class="discover-btn" onclick="discoverResources()">
+                            <i class="fas fa-search"></i>
+                            Discover Resources
+                        </button>
+                    </div>
+                </div>
+
+                <div class="inventory-summary">
+                    <div class="summary-cards">
+                        <div class="summary-card">
+                            <div class="card-icon">
+                                <i class="fas fa-server"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-value" id="totalResourcesCount">--</span>
+                                <span class="card-label">Total Resources</span>
+                            </div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="card-icon">
+                                <i class="fas fa-layer-group"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-value" id="resourceTypesCount">--</span>
+                                <span class="card-label">Resource Types</span>
+                            </div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="card-icon">
+                                <i class="fas fa-globe"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-value" id="regionsCoveredCount">--</span>
+                                <span class="card-label">Regions Covered</span>
+                            </div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="card-icon">
+                                <i class="fas fa-percentage"></i>
+                            </div>
+                            <div class="card-content">
+                                <span class="card-value" id="coveragePercentage">--</span>%
+                                <span class="card-label">Coverage</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="inventory-charts">
+                    <div class="chart-container">
+                        <h3>Resources by Type</h3>
+                        <canvas id="resourceTypeChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Resources by Region</h3>
+                        <canvas id="resourceRegionChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Risk Analysis</h3>
+                        <canvas id="resourceRiskChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="recent-resources">
+                    <h3>Recently Discovered Resources</h3>
+                    <div class="resources-table-container">
+                        <table class="resources-table">
+                            <thead>
+                                <tr>
+                                    <th>Resource ID</th>
+                                    <th>Type</th>
+                                    <th>Region</th>
+                                    <th>Created</th>
+                                    <th>Risk Score</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resourcesTableBody">
+                                <!-- Resources will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Tab -->
+            <div class="tab-content" id="analytics">
+                <div class="analytics-header">
+                    <h2>Advanced Analytics</h2>
+                    <div class="analytics-controls">
+                        <select id="analyticsTimeRange">
+                            <option value="7">Last 7 days</option>
+                            <option value="30" selected>Last 30 days</option>
+                            <option value="90">Last 90 days</option>
+                        </select>
+                        <button class="export-btn" onclick="exportReport()">
+                            <i class="fas fa-download"></i>
+                            Export Report
+                        </button>
+                    </div>
+                </div>
+
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <h3>Security Trends</h3>
+                        <canvas id="securityTrendsChart"></canvas>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Performance Metrics</h3>
+                        <div class="performance-metrics" id="performanceMetrics">
+                            <!-- Metrics will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Detection Efficiency</h3>
+                        <canvas id="detectionEfficiencyChart"></canvas>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>System Health</h3>
+                        <div class="system-health" id="systemHealth">
+                            <!-- Health metrics will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="predictive-analytics">
+                    <h3>Predictive Analytics</h3>
+                    <div class="prediction-cards">
+                        <div class="prediction-card">
+                            <h4>Risk Forecast</h4>
+                            <canvas id="riskForecastChart"></canvas>
+                        </div>
+                        <div class="prediction-card">
+                            <h4>Compliance Trends</h4>
+                            <canvas id="complianceTrendsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Loading...</span>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div class="notification-container" id="notificationContainer">
+        <!-- Notifications will be added here -->
+    </div>
+
+    <!-- Modal for Finding Details -->
+    <div class="modal" id="findingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Finding Details</h3>
+                <button class="modal-close" onclick="closeFindingModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="findingModalBody">
+                <!-- Finding details will be populated here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeFindingModal()">Close</button>
+                <button class="btn btn-primary" onclick="remediateFinding()">Remediate</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
+
